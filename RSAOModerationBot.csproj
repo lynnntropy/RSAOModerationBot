@@ -3,6 +3,22 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp2.0</TargetFramework>
+        <LangVersion>7.1</LangVersion>
     </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Autofac" Version="4.8.1" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.1.1" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
+      <PackageReference Include="RedditSharp" Version="2.0.0-CI00068" />
+      <PackageReference Include="System.Security.Permissions" Version="4.5.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="config.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
 
 </Project>
