@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using RedditSharp;
 using RedditSharp.Things;
 using RSAOModerationBot.Module;
+using Serilog;
 
 namespace RSAOModerationBot
 {
@@ -32,6 +33,13 @@ namespace RSAOModerationBot
                 .As<IConfigurationRoot>()
                 .As<IConfiguration>();
             
+            var logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
+            containerBuilder.RegisterInstance(logger).As<ILogger>();
+            
             var webAgent = new BotWebAgent(
                 configuration["reddit:username"],
                 configuration["reddit:password"],
@@ -43,8 +51,12 @@ namespace RSAOModerationBot
             var reddit = new Reddit(webAgent, true);
             containerBuilder.RegisterInstance(reddit).As<Reddit>();
             
-            var subreddit = await reddit.GetSubredditAsync("/r/omegavesko");
+            logger.Information($"Logged into Reddit as /u/{reddit.User}.");
+            
+            var subreddit = await reddit.GetSubredditAsync(configuration["reddit:subreddit"]);
             containerBuilder.RegisterInstance(subreddit).As<Subreddit>();
+            
+            logger.Information($"Loaded subreddit /r/{subreddit.Name}.");
 
             containerBuilder.RegisterType<ImagePostTrackerModule>()
                 .As<IModule>()
@@ -77,6 +89,8 @@ namespace RSAOModerationBot
         
             _loopTimer.AutoReset = true;
             _loopTimer.Enabled = true;
+            
+            logger.Information("Initialization complete.");
 
             await Task.Delay(-1);
         }

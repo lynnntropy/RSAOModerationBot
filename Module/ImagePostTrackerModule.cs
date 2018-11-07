@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using RedditSharp;
 using RedditSharp.Things;
+using Serilog;
 
 namespace RSAOModerationBot.Module
 {
@@ -12,18 +13,20 @@ namespace RSAOModerationBot.Module
     {
         private readonly Reddit _reddit;
         private readonly Subreddit _subreddit;
+        private readonly ILogger _logger;
 
-        public ImagePostTrackerModule(Reddit reddit, Subreddit subreddit)
+        public ImagePostTrackerModule(Reddit reddit, Subreddit subreddit, ILogger logger)
         {
             _reddit = reddit;
             _subreddit = subreddit;
+            _logger = logger;
         }
 
         public async Task ProcessNewPosts(List<Post> posts)
         {
             foreach (var post in posts)
             {
-                Console.WriteLine($"Handling new post: {post.Title} by {post.AuthorName} ({post.Shortlink})");
+                _logger.Information($"Handling new post: {post.Title} by {post.AuthorName} ({post.Shortlink})");
 
                 if (!IsImagePost(post)) continue;
 
@@ -39,7 +42,7 @@ namespace RSAOModerationBot.Module
                 if (!recentPostsByUser.Any(IsImagePost)) continue;
                     
                 // The user has posted an image post in the past week.
-                Console.WriteLine("Reporting possible image rule infringement.");
+                _logger.Information("Reporting possible image rule infringement.");
                 await HandleInfringingPost(post, recentPostsByUser.First(IsImagePost));
             }
         }

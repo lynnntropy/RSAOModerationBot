@@ -4,6 +4,7 @@
     "password": "",
     "clientId": "",
     "clientSecret": "",
-    "redirectUri": ""
+    "redirectUri": "",
+    "subreddit": ""
   }
 }
