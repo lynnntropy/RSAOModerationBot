@@ -22,4 +22,4 @@ This is a Reddit bot written in C# and .NET Core, built to assist in moderating 
 
 ## License
 
-This project is licensed under the GPLv3 License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the GPLv3 License - see the [LICENSE](LICENSE) file for details
