@@ -20,7 +20,84 @@ namespace RSAOModerationBot
 
         private static IContainer Container { get; set; }
 
+        /// <summary>
+        /// The entry point of the program.
+        /// </summary>
         public static async Task Main()
+        {
+            await InitializeContainer();
+            
+            using (var scope = Container.BeginLifetimeScope())
+            {
+                var logger = scope.Resolve<ILogger>();
+                
+                var modules = scope.Resolve<IEnumerable<IModule>>();
+                foreach (var module in modules)
+                {
+                    logger.Information($"Found module: {module.GetType().Name} {(module is IPostMonitorModule ? "(post monitor)": "")}");
+                }
+            }
+            
+            _loopTimer = new Timer(30000);
+
+            _loopTimer.Elapsed += async (sender, args) =>
+            {
+                await CheckForNewPostsAsync();
+            };
+        
+            _loopTimer.AutoReset = true;
+            _loopTimer.Enabled = true;
+
+            await Task.Delay(-1);
+        }
+
+        /// <summary>
+        /// Checks for new posts. This method is used to provide new
+        /// posts to modules implementing <c>IPostMonitorModule</c>.
+        /// </summary>
+        private static async Task CheckForNewPostsAsync()
+        {
+            using (var scope = Container.BeginLifetimeScope())
+            {
+                var time = _lastLoopTimeUtc;
+                _lastLoopTimeUtc = DateTimeOffset.UtcNow;
+
+                var subreddit = scope.Resolve<Subreddit>();
+                var logger = scope.Resolve<ILogger>();
+
+                List<Post> newPosts;
+                    
+                try
+                {
+                    newPosts = await subreddit.GetPosts(Subreddit.Sort.New)
+                        .TakeWhile(p => p.CreatedUTC >= time)
+                        .ToList();
+                }
+                catch (OperationCanceledException e)
+                {
+                    logger.Error(e, "Encountered OperationCanceledException when trying to fetch new posts.");
+                    return;
+                }
+                    
+                if (newPosts.Count == 0) return;
+
+                foreach (var post in newPosts)
+                {
+                    logger.Information($"New post: {post.Title} by {post.AuthorName} ({post.Shortlink})");
+                }
+
+                var postMonitorModules = scope.Resolve<IEnumerable<IPostMonitorModule>>();
+                foreach (var module in postMonitorModules)
+                {
+                    await module.ProcessNewPosts(newPosts);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Initializes the DI container.
+        /// </summary>
+        private static async Task InitializeContainer()
         {
             var containerBuilder = new ContainerBuilder();
             
@@ -61,53 +138,10 @@ namespace RSAOModerationBot
             containerBuilder.RegisterType<ImagePostTrackerModule>()
                 .As<IModule>()
                 .As<IPostMonitorModule>();
+            
+            logger.Information("Container initialization complete.");
 
             Container = containerBuilder.Build();
-            
-            _loopTimer = new Timer(30000);
-
-            _loopTimer.Elapsed += async (sender, args) =>
-            {
-                using (var scope = Container.BeginLifetimeScope())
-                {
-                    var time = _lastLoopTimeUtc;
-                    _lastLoopTimeUtc = DateTimeOffset.UtcNow;
-
-                    List<Post> newPosts;
-                    
-                    try
-                    {
-                        newPosts = await subreddit.GetPosts(Subreddit.Sort.New)
-                            .TakeWhile(p => p.CreatedUTC >= time)
-                            .ToList();
-                    }
-                    catch (OperationCanceledException e)
-                    {
-                        logger.Error(e, "Encountered OperationCanceledException when trying to fetch new posts.");
-                        return;
-                    }
-                    
-                    if (newPosts.Count == 0) return;
-
-                    foreach (var post in newPosts)
-                    {
-                        logger.Information($"New post: {post.Title} by {post.AuthorName} ({post.Shortlink})");
-                    }
-
-                    var postMonitorModules = scope.Resolve<IEnumerable<IPostMonitorModule>>();
-                    foreach (var module in postMonitorModules)
-                    {
-                        await module.ProcessNewPosts(newPosts);
-                    }
-                }
-            };
-        
-            _loopTimer.AutoReset = true;
-            _loopTimer.Enabled = true;
-            
-            logger.Information("Initialization complete.");
-
-            await Task.Delay(-1);
         }
     }
 }
