@@ -1,6 +1,6 @@
 # /r/SAO Moderation Bot
 
-[!screenshot](https://i.imgur.com/Ok0Bu9X.png)
+![screenshot](https://i.imgur.com/Ok0Bu9X.png)
 
 This is a Reddit bot written in C# and .NET Core, built to assist in moderating /r/SwordArtOnline. 
 
