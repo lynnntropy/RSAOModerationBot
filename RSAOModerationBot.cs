@@ -73,11 +73,26 @@ namespace RSAOModerationBot
                     var time = _lastLoopTimeUtc;
                     _lastLoopTimeUtc = DateTimeOffset.UtcNow;
 
-                    var newPosts = await subreddit.GetPosts()
-                        .TakeWhile(p => p.CreatedUTC >= time)
-                        .ToList();
-
+                    List<Post> newPosts;
+                    
+                    try
+                    {
+                        newPosts = await subreddit.GetPosts(Subreddit.Sort.New)
+                            .TakeWhile(p => p.CreatedUTC >= time)
+                            .ToList();
+                    }
+                    catch (OperationCanceledException e)
+                    {
+                        logger.Error(e, "Encountered OperationCanceledException when trying to fetch new posts.");
+                        return;
+                    }
+                    
                     if (newPosts.Count == 0) return;
+
+                    foreach (var post in newPosts)
+                    {
+                        logger.Information($"New post: {post.Title} by {post.AuthorName} ({post.Shortlink})");
+                    }
 
                     var postMonitorModules = scope.Resolve<IEnumerable<IPostMonitorModule>>();
                     foreach (var module in postMonitorModules)

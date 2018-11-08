@@ -26,8 +26,6 @@ namespace RSAOModerationBot.Module
         {
             foreach (var post in posts)
             {
-                _logger.Information($"Handling new post: {post.Title} by {post.AuthorName} ({post.Shortlink})");
-
                 if (!IsImagePost(post)) continue;
 
                 var user = await _reddit.GetUserAsync(post.AuthorName);
