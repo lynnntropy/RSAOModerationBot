@@ -25,7 +25,7 @@ namespace RSAOModerationBot
         /// </summary>
         public static async Task Main()
         {
-            await InitializeContainer();
+            await InitializeContainerAsync();
             
             using (var scope = Container.BeginLifetimeScope())
             {
@@ -89,7 +89,7 @@ namespace RSAOModerationBot
                 var postMonitorModules = scope.Resolve<IEnumerable<IPostMonitorModule>>();
                 foreach (var module in postMonitorModules)
                 {
-                    await module.ProcessNewPosts(newPosts);
+                    await module.ProcessNewPostsAsync(newPosts);
                 }
             }
         }
@@ -97,7 +97,7 @@ namespace RSAOModerationBot
         /// <summary>
         /// Initializes the DI container.
         /// </summary>
-        private static async Task InitializeContainer()
+        private static async Task InitializeContainerAsync()
         {
             var containerBuilder = new ContainerBuilder();
             

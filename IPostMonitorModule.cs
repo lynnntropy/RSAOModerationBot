@@ -6,6 +6,6 @@ namespace RSAOModerationBot
 {
     public interface IPostMonitorModule : IModule
     {
-        Task ProcessNewPosts(List<Post> posts);
+        Task ProcessNewPostsAsync(List<Post> posts);
     }
 }

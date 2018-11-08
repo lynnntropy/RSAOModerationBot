@@ -22,7 +22,7 @@ namespace RSAOModerationBot.Module
             _logger = logger;
         }
 
-        public async Task ProcessNewPosts(List<Post> posts)
+        public async Task ProcessNewPostsAsync(List<Post> posts)
         {
             foreach (var post in posts)
             {
@@ -41,7 +41,7 @@ namespace RSAOModerationBot.Module
                     
                 // The user has posted an image post in the past week.
                 _logger.Information("Reporting possible image rule infringement.");
-                await HandleInfringingPost(post, recentPostsByUser.First(IsImagePost));
+                await HandleInfringingPostAsync(post, recentPostsByUser.First(IsImagePost));
             }
         }
         
@@ -54,7 +54,7 @@ namespace RSAOModerationBot.Module
                 .Success;
         }
         
-        private static async Task HandleInfringingPost(Post post, Post lastPost)
+        private static async Task HandleInfringingPostAsync(Post post, Post lastPost)
         {
             var timeSpanSinceLastPost = DateTimeOffset.UtcNow - lastPost.CreatedUTC;
             
