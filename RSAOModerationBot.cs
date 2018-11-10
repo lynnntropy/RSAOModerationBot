@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Timers;
 using Autofac;
@@ -133,9 +134,16 @@ namespace RSAOModerationBot
             var subreddit = await reddit.GetSubredditAsync(configuration["reddit:subreddit"]);
             containerBuilder.RegisterInstance(subreddit).As<Subreddit>();
             
+            var httpClient = new HttpClient();
+            containerBuilder.RegisterInstance(httpClient).As<HttpClient>();
+            
             logger.Information($"Loaded subreddit /r/{subreddit.Name}.");
 
             containerBuilder.RegisterType<ImagePostTrackerModule>()
+                .As<IModule>()
+                .As<IPostMonitorModule>();
+            
+            containerBuilder.RegisterType<DiscordWebhookModule>()
                 .As<IModule>()
                 .As<IPostMonitorModule>();
             
