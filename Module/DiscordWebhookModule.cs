@@ -96,7 +96,7 @@ namespace RSAOModerationBot.Module
             var json = JsonConvert.SerializeObject(messageObject);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(webhookUrl, content);
+            await _httpClient.PostAsync(webhookUrl, content);
         }
         
         private static bool IsImagePost(Post post)
