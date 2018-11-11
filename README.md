@@ -9,6 +9,13 @@ This is a Reddit bot written in C# and .NET Core, built to assist in moderating 
 - Copy `config.dist.json` to `config.json` and populate it with the required parameters. Make sure `config.json` is set to copy to the output directory on each build.
 - Build and run the project.
 
+## Deployment
+
+```bash
+# build for production and put the output in bin/Release/
+dotnet publish --configuration Release
+```
+
 ## Built With
 
 * .NET Core 
